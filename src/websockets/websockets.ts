@@ -24,7 +24,7 @@ export const createWebsocketServer = (server: Server) => {
     const socketId = generateSocketId()
     websocketMap.set(socketId, extendedWs)
     reverseWebsocketMap.set(extendedWs, socketId)
-    console.log('Client connected. Number of clients:', websocketMap.size)
+    console.log(`Client connected with id: ${socketId}. Number of clients: `, websocketMap.size)
 
     // Send welcome message to client
     ws.send(welcomeMessage(socketId))
@@ -32,17 +32,17 @@ export const createWebsocketServer = (server: Server) => {
     // Set interval to check is socket is alive
     const aliveInterval = setInterval(() => {
       if (extendedWs.isAlive === false) {
-        console.log('Client is not alive. Terminating connection', socketId)
         const specificId = reverseWebsocketMap.get(extendedWs)
         extendedWs.terminate()
         websocketMap.delete(specificId as string)
         reverseWebsocketMap.delete(extendedWs)
+        console.log('Client is not alive. End connection', specificId, '- All  remaining socket ids:', Array.from(websocketMap.keys()))
         clearInterval(aliveInterval) // Clear interval when client disconnects
         return
       }
       extendedWs.isAlive = false
       extendedWs.ping() // Send a ping to prompt a message
-    }, 10000) // 10 seconds
+    }, 60000) // 60 seconds
 
     // Listen for messages in this client
     ws.on('message', (message) => {
@@ -63,7 +63,6 @@ export const createWebsocketServer = (server: Server) => {
     // Listen for client disconnection (ws is a number 1001)
     ws.on('close', (ws: WebSocket) => {
       clearInterval(aliveInterval)
-      console.log('Disconnecting client. All socket ids:', Array.from(websocketMap.keys()))
     })
   })
 }
