@@ -46,7 +46,7 @@ export const createWebsocketServer = (server: Server) => {
     const aliveInterval = setInterval(() => {
       if (extendedWs.isAlive === false) {
         const specificId = reverseWebsocketMap.get(extendedWs)
-        extendedWs.terminate()
+        ws.terminate()
         websocketMap.delete(specificId as string)
         reverseWebsocketMap.delete(extendedWs)
         console.log('Client is not alive. End connection', specificId, '- All  remaining socket ids:', Array.from(websocketMap.keys()))
