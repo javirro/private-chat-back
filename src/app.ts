@@ -12,6 +12,12 @@ app.use(
 
 app.use(express.json({ limit: '50mb' }))
 
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    message: 'Hello World to private chat app'
+  })
+})
+
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     message: 'Endpoint not found'
