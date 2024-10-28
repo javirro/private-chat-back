@@ -7,6 +7,7 @@ dotenv.config()
 const server: Server = createServer(app)
 createWebsocketServer(server)
 
+
 const PORT = process.env.PORT || 5000
 server.listen(PORT)
 console.log(`Server running on port ${PORT}`)

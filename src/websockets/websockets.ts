@@ -23,7 +23,7 @@ export const socketIdChatMap = new Map<ChatType, string[]>()
 export const createWebsocketServer = (server: Server) => {
   const wss = new WebSocketServer({ server })
 
-  wss.on('connection', (ws: ExtendedWebSocket, req: Request) => {
+  wss.on('connection', (ws: WebSocket, req: Request) => {
     const query = url.parse(req.url as string, true).query
     const chat = query.chat as ChatType
     const extendedWs = ws as ExtendedWebSocket
@@ -54,7 +54,6 @@ export const createWebsocketServer = (server: Server) => {
         return
       }
       extendedWs.isAlive = false
-      extendedWs.ping() // Send a ping to prompt a message
     }, 60000) // 60 seconds
 
     // Listen for messages in this client
@@ -63,15 +62,16 @@ export const createWebsocketServer = (server: Server) => {
       if (parsedMessage.type === 'message') {
         sendMessageToChat(websocketMap, socketIdChatMap, message.toString())
       }
-
-      if (!ws) return
-      ws.isAlive = true
+      const socketIdFromMessage = parsedMessage.socketId
+      const websocket = websocketMap.get(socketIdFromMessage)
+      if (!websocket) return
+      websocket.isAlive = true
 
       console.log('Message:', parsedMessage)
     })
 
     // Listen for client disconnection (ws is a number 1001)
-    ws.on('close', (ws: WebSocket) => {
+    ws.on('close', () => {
       clearInterval(aliveInterval)
     })
   })
