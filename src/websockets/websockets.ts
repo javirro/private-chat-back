@@ -37,7 +37,7 @@ export const createWebsocketServer = (server: Server) => {
       chatArray?.push(socketId)
       socketIdChatMap.set(chat, chatArray)
     }
-    console.log(`Client connected with id: ${socketId}. Number of clients: `, websocketMap.size)
+    console.log(`Client connected with id: ${socketId} in chat ${chat}. Number of clients: `, websocketMap.size)
 
     // Send welcome message to client
     ws.send(welcomeMessage(socketId, chat))
@@ -62,11 +62,15 @@ export const createWebsocketServer = (server: Server) => {
       if (parsedMessage.type === 'message') {
         sendMessageToChat(websocketMap, socketIdChatMap, message.toString())
       }
-      const socketIdFromMessage = parsedMessage.socketId
+      const { socketId: socketIdFromMessage, chat: chatType } = parsedMessage
       const websocket = websocketMap.get(socketIdFromMessage)
       if (!websocket) return
       websocket.isAlive = true
 
+      const socketsInChat: string[] = socketIdChatMap.get(chatType)
+      if (!socketsInChat.includes(socketIdFromMessage)) {
+        socketsInChat.push(socketIdFromMessage)
+      }
       console.log('Message:', parsedMessage)
     })
 
